@@ -1,0 +1,38 @@
+html, body {
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    /*overflow: hidden;*/
+}
+
+
+
+.django_forms > input, .django_forms > select, .django_forms > textarea {
+    display: block;
+    width: 100%;
+    padding: .375rem .75rem;
+    font-size: .7rem;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    margin-bottom: 3px;
+}
+
+.django_forms > label{
+    font-size: 9pt;
+    font-weight: bold;
+    margin-bottom: 0px;
+}
+.django_forms > textarea {
+height: 6em;
+}
+
+.btn{
+    font-size: 0.8rem;
+}
+
+

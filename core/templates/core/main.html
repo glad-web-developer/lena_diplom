@@ -1,0 +1,103 @@
+{% extends 'core/base.html' %}
+
+
+{% block Content %}
+
+    <div class="container-fluid">
+    {%  for danie in nabor %}
+        <div class="row">
+
+        <div class="col-12">
+            <h5 class="text-center my-4">{{ danie.name }} ({{ danie.tip }})</h5>
+        </div>
+            <div class="col-12 col-xl-7">
+                <table class="table table-bordered table-responsive  small">
+                    <tr>
+                        <th>n ˗ период</th>
+                        <th>q ˗ количество товара</th>
+                        <th>p ˗ цена</th>
+                        <th>c ˗ удельная стоимость производства</th>
+                        <th>a(n,r) ˗ коэффициент дисконтирования</th>
+                        <th>d ˗ негативное воздействие</th>
+                        <th>e ˗ объем загрязнения</th>
+                        <th>δ ˗ доля накопленного загрязняющего вещества</th>
+                        <th>r ˗ ставка дисконтирования</th>
+                        <th>t ˗ начальный момент времени</th>
+                        <th>f ˗ инвестиции в расширение производства</th>
+                        <th>b3 ˗ величина выгод</th>
+                        <th>beta - граница привлекательности инвестиций</th>
+                    </tr>
+                    {% for i in danie.parametri.all %}
+                        <tr>
+                            <td>{{ i.period }}</td>
+                            <td>{{ i.kol_vo_tovara }}</td>
+                            <td>{{ i.price }}</td>
+                            <td>{{ i.udelnaia_stoimost_proizvodstva }}</td>
+                            <td>{{ i.get_koefizent_discontirovania }}</td>
+                            <td>{{ i.negativ_vozdeistvia_na_obshestvo }}</td>
+                            <td>{{ i.obiem_zagriaz_veshestv }}</td>
+                            <td>{{ i.dolia_nackoplenia_zagr_vechesatv }}</td>
+                            <td>{{ i.stavka_diskontirovania }}</td>
+                            <td>{{ i.nachalnii_moment_vremeni }}</td>
+                            <td>{{ i.investizii_v_rashirenie_proizvodstva }}</td>
+                            <td>{{ i.get_velichina_vigod }}</td>
+                            <td>{{ i.get_graniza_privlekatelnosti }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <div class="col-12 col-xl">
+                <canvas id="grafic{{ forloop.counter }}" class="w-100 border bg-white py-3" height="500"></canvas>
+
+                <script>
+                    $(function () {
+
+
+                        var config_diograma_obrazovanie = {
+                            type: 'line',
+                            data: {
+                                datasets: [{
+                                    data: [{% for i in danie.parametri.all %} {{ i.get_graniza_privlekatelnosti }} ,{% endfor %}],
+                                    label: 'Beta',
+                                    steppedLine: 'true',
+                                    borderColor: '#ff0000',
+                                    fill: false
+                                }],
+
+                                labels: [
+                                    {% for i in danie.parametri.all %} 'С = {{ i.udelnaia_stoimost_proizvodstva }}' ,{% endfor %}]
+                            },
+                            options: {
+                                responsive: true,
+
+                                title: {
+                                    display: false,
+                                    text: 'Структура сотрудников по категориям(на конец периода)'
+                                },
+                            }
+                        };
+
+
+                        var ctx_diograma_obrazovanie = document.getElementById("grafic{{ forloop.counter }}").getContext('2d');
+                        new Chart(ctx_diograma_obrazovanie, config_diograma_obrazovanie);
+
+
+                    });
+
+
+                </script>
+            </div>
+
+        </div>
+        <hr>
+    {% endfor %}
+    </div>
+
+
+
+
+
+
+
+
+{% endblock %}

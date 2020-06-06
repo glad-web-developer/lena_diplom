@@ -1,0 +1,3 @@
+# Project exclude paths
+/core/static/core/lib/jqwidgets/scripts/initdashboard.js
+/core/static/core/lib/jqwidgets/scripts/localization.js

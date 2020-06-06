@@ -1,0 +1,65 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Пока без разницы</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" href="{% static 'core/favicon.ico' %}">
+    <link rel="stylesheet" href="{% static 'core/lib/bootstrap.min.css' %}">
+    <link rel="stylesheet"
+          href="{% static 'core/lib/jqwidgets/jqwidgets/styles/jqx.base.css' %}" type="text/css"/>
+    <link rel="stylesheet"
+          href="{% static 'core/lib/jqwidgets/jqwidgets/styles/jqx.light.css' %}" type="text/css"/>
+    <link href="{% static 'core/lib/pnotify.custom.min.css' %}" media="all" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" href="{% static 'core/lib/font-awesome-4.7.0/css/font-awesome.min.css' %}" type="text/css"/>
+    <link rel="stylesheet" href="{% static 'core/core.css' %}" type="text/css"/>
+<script src="{% static 'core/lib/jquery-3.2.1.slim.min.js' %}"></script>
+    {% block CSS %}{% endblock %}
+</head>
+<body>
+
+<nav class="navbar navbar-light bg-success text-light mb-2 px-0">
+    <div class="container">
+        <div class="row w-100">
+             <div class="col d-md-block d-none ">
+
+
+                <a class="text-light text-center text-uppercase nav-link py-2 px-0"
+                   href="/"><span><b>Пока без разницы</b></span></a>
+            </div>
+            {% if user.is_authenticated %}
+                <div class="col col-md-2 text-right pt-2"><a class="text-light nav-link font-weight-bold p-0 text-light nav-link "
+                                                        href="/admin/"
+                                                        title="{{ user.username }}">{{ user.username }} </a>
+                </div>
+            {% else %}
+                <div class="col col-md-2 text-right pt-2"><a class="text-light nav-link font-weight-bold p-0 text-light nav-link "
+                                                        href="/admin/"
+                                                        title="Авторизация">Авторизация </a>
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+</nav>
+
+
+<div class="wrap">
+    {% block Content %}{% endblock %}
+</div>
+
+
+
+
+<script src="{% static 'core/lib/bootstrap.min.js' %}"></script>
+<script src="{% static 'core/lib/Chart.min.js' %}"></script>
+<script src="{% static 'core/lib/Chart.bundle.min.js' %}"></script>
+
+
+
+{% block JS %}{% endblock %}
+</body>
+</html>
