@@ -12,7 +12,7 @@
                         <a class="list-group-item  list-group-item-action {% if forloop.first %} active{% endif %}"
                            id="list-home-list{{ danie.id }}"
                            data-toggle="list"
-                           href="#list-home{{ danie.id }}" role="tab">{{ danie }} </a>
+                           href="#list-home{{ danie.id }}" role="tab">{{ danie }} ({{ danie.tip }}) </a>
                     {% endfor %}
                 </div>
 
@@ -44,13 +44,16 @@
                                             <th>r ˗ ставка дисконтирования</th>
                                             <th>t ˗ начальный момент времени</th>
                                             <th>f ˗ инвестиции в расширение производства</th>
-
-                                            <th class="table-success">b4 - величина выгод</th>
-                                            <th class="table-success">alpha - граница привлекательности инвестиций</th>
-
-                                            <th class="table-danger">b3 ˗ величина выгод</th>
-                                            <th class="table-danger">beta - граница привлекательности инвестиций</th>
-
+                                            {% if danie.tip == 'B4 и Alpha' %}
+                                                <th class="table-success">b4 - величина выгод</th>
+                                                <th class="table-success">alpha - граница привлекательности инвестиций
+                                                </th>
+                                            {% endif %}
+                                            {% if danie.tip == 'B3 и Beta' %}
+                                                <th class="table-danger">b3 ˗ величина выгод</th>
+                                                <th class="table-danger">beta - граница привлекательности инвестиций
+                                                </th>
+                                            {% endif %}
                                         </tr>
                                         {% for i in danie.parametri.all %}
                                             <tr>
@@ -65,98 +68,105 @@
                                                 <td>{{ i.stavka_diskontirovania }}</td>
                                                 <td>{{ i.nachalnii_moment_vremeni }}</td>
                                                 <td>{{ i.investizii_v_rashirenie_proizvodstva }}</td>
+                                                {% if danie.tip == 'B4 и Alpha' %}
+                                                    <td>{{ i.get_b4 }}</td>
+                                                    <td>{{ i.get_alpha }}</td>
+                                                {% endif %}
+                                                {% if danie.tip == 'B3 и Beta' %}
+                                                    <td>{{ i.get_velichina_vigod }}</td>
+                                                    <td>{{ i.get_graniza_privlekatelnosti }}</td>
+                                                {% endif %}
 
-                                                <td>{{ i.get_b4 }}</td>
-                                                <td>{{ i.get_alpha }}</td>
-
-                                                <td >{{ i.get_velichina_vigod }}</td>
-                                                <td>{{ i.get_graniza_privlekatelnosti }}</td>
                                             </tr>
                                         {% endfor %}
                                     </table>
                                 </div>
                                 <div class="col-12 col-xl-5 col-md-6 col-sm-6 col-lg-5">
-                                    <canvas id="grafic_alpha{{ forloop.counter }}" class="w-100 border bg-white py-3"
-                                            height="300"></canvas>
+                                    {% if danie.tip == 'B4 и Alpha' %}
+                                        <canvas id="grafic_alpha{{ forloop.counter }}"
+                                                class="w-100 border bg-white py-3"
+                                                height="300"></canvas>
 
-                                    <script>
-                                        $(function () {
-
-
-                                            var config_diograma_obrazovanie = {
-                                                type: 'line',
-                                                data: {
-                                                    datasets: [{
-                                                        data: [
-                                                            {% for i in danie.parametri.all %} {{ i.str_alpha }} ,{% endfor %}],
-                                                        label: 'Alpha',
-                                                        steppedLine: 'true',
-                                                        borderColor: '#28a745',
-                                                        fill: false
-                                                    }],
-
-                                                    labels: [
-                                                        {% for i in danie.parametri.all %} 'd = {{ i.negativ_vozdeistvia_na_obshestvo }}' ,{% endfor %}]
-                                                },
-                                                options: {
-                                                    responsive: true,
+                                        <script>
+                                            $(function () {
 
 
-                                                }
-                                            };
+                                                var config_diograma_obrazovanie = {
+                                                    type: 'line',
+                                                    data: {
+                                                        datasets: [{
+                                                            data: [
+                                                                {% for i in danie.parametri.all %} {{ i.str_alpha }} ,{% endfor %}],
+                                                            label: 'Alpha',
+                                                            steppedLine: 'true',
+                                                            borderColor: '#28a745',
+                                                            fill: false
+                                                        }],
 
-
-                                            var ctx_diograma_obrazovanie = document.getElementById("grafic_alpha{{ forloop.counter }}").getContext('2d');
-                                            new Chart(ctx_diograma_obrazovanie, config_diograma_obrazovanie);
-
-
-                                        });
-
-
-                                    </script>
-                            <hr>
-
-                                <canvas id="grafic_beta{{ forloop.counter }}" class="w-100 border bg-white py-3"
-                                            height="300"></canvas>
-
-                                    <script>
-                                        $(function () {
-
-
-                                            var config_diograma_obrazovanie = {
-                                                type: 'line',
-                                                data: {
-                                                    datasets: [{
-                                                        data: [
-                                                            {% for i in danie.parametri.all %} {{ i.get_graniza_privlekatelnosti }} ,{% endfor %}],
-                                                        label: 'Beta',
-                                                        steppedLine: 'true',
-                                                        borderColor: '#a7282c',
-                                                        fill: false
-                                                    }],
-
-                                                    labels: [
-                                                        {% for i in danie.parametri.all %} 'С = {{ i.udelnaia_stoimost_proizvodstva }}' ,{% endfor %}]
-                                                },
-                                                options: {
-                                                    responsive: true,
-
-                                                    title: {
-                                                        display: false,
-                                                        text: 'Структура сотрудников по категориям(на конец периода)'
+                                                        labels: [
+                                                            {% for i in danie.parametri.all %} 'd = {{ i.negativ_vozdeistvia_na_obshestvo }}' ,{% endfor %}]
                                                     },
-                                                }
-                                            };
+                                                    options: {
+                                                        responsive: true,
 
 
-                                            var ctx_diograma_obrazovanie = document.getElementById("grafic_beta{{ forloop.counter }}").getContext('2d');
-                                            new Chart(ctx_diograma_obrazovanie, config_diograma_obrazovanie);
+                                                    }
+                                                };
 
 
-                                        });
+                                                var ctx_diograma_obrazovanie = document.getElementById("grafic_alpha{{ forloop.counter }}").getContext('2d');
+                                                new Chart(ctx_diograma_obrazovanie, config_diograma_obrazovanie);
 
 
-                                    </script>
+                                            });
+
+
+                                        </script>
+                                    {% endif %}
+                                    {% if danie.tip == 'B3 и Beta' %}
+
+                                        <canvas id="grafic_beta{{ forloop.counter }}" class="w-100 border bg-white py-3"
+                                                height="300"></canvas>
+
+                                        <script>
+                                            $(function () {
+
+
+                                                var config_diograma_obrazovanie = {
+                                                    type: 'line',
+                                                    data: {
+                                                        datasets: [{
+                                                            data: [
+                                                                {% for i in danie.parametri.all %} {{ i.get_graniza_privlekatelnosti }} ,{% endfor %}],
+                                                            label: 'Beta',
+                                                            steppedLine: 'true',
+                                                            borderColor: '#a7282c',
+                                                            fill: false
+                                                        }],
+
+                                                        labels: [
+                                                            {% for i in danie.parametri.all %} 'С = {{ i.udelnaia_stoimost_proizvodstva }}' ,{% endfor %}]
+                                                    },
+                                                    options: {
+                                                        responsive: true,
+
+                                                        title: {
+                                                            display: false,
+                                                            text: 'Структура сотрудников по категориям(на конец периода)'
+                                                        },
+                                                    }
+                                                };
+
+
+                                                var ctx_diograma_obrazovanie = document.getElementById("grafic_beta{{ forloop.counter }}").getContext('2d');
+                                                new Chart(ctx_diograma_obrazovanie, config_diograma_obrazovanie);
+
+
+                                            });
+
+
+                                        </script>
+                                    {% endif %}
                                 </div>
 
                             </div>

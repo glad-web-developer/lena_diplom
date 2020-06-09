@@ -21,6 +21,7 @@ class ParametriGraficof(models.Model):
     class Meta:
         verbose_name = 'Параметры графиков'
         verbose_name_plural = 'Параметры графиков'
+        ordering = ['period']
     nabor_graficov = models.ForeignKey(NaborGraficov, verbose_name='Набор графиков', null=True, blank=False, on_delete=models.CASCADE, related_name='parametri')
     period = models.IntegerField('n ˗ период', )
     kol_vo_tovara = models.IntegerField('q ˗ количество товара', )
@@ -58,17 +59,20 @@ class ParametriGraficof(models.Model):
         koefizent_discontirovania = 0
         for i in range(self.period):
             koefizent_discontirovania += 1 / (1 + float(self.stavka_diskontirovania)) ** (i + 1)
-        return koefizent_discontirovania
+        sum = 0
+        try:
+            for i in range(self.period):
+                sum += (1 - (1 - float(self.dolia_nackoplenia_zagr_vechesatv)) ** (i + 1)) / (
+                            float(self.dolia_nackoplenia_zagr_vechesatv) * (1 + float(self.stavka_diskontirovania)) ** (
+                                i + 1)) - float(self.investizii_v_rashirenie_proizvodstva)
+            velichina_vigod = float(self.kol_vo_tovara) * (
+                    float(self.price) - float(self.udelnaia_stoimost_proizvodstva)) * koefizent_discontirovania - float(
+                self.negativ_vozdeistvia_na_obshestvo) * float(self.kol_vo_tovara) * float(
+                self.obiem_zagriaz_veshestv) * sum
 
-        summa = 0
-        for i in range(self.period):
-            summa += (1 - (1 - float(self.dolia_nackoplenia_zagr_vechesatv)) ** (i + 1)) / (
-                        float(self.dolia_nackoplenia_zagr_vechesatv) * (1 + float(self.stavka_diskontirovania)) ** (
-                            i + 1)) - float(self.investizii_v_rashirenie_proizvodstva)
-        velichina_vigod = float(self.kol_vo_tovara) * (
-                float(self.price) - float(self.udelnaia_stoimost_proizvodstva)) * koefizent_discontirovania - float(
-            self.negativ_vozdeistvia_na_obshestvo) * float(self.kol_vo_tovara) * float(
-            self.obiem_zagriaz_veshestv) * summa
+            velichina_vigod = velichina_vigod
+        except ZeroDivisionError:
+            velichina_vigod = 0
         return velichina_vigod
 
 
