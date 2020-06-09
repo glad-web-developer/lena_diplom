@@ -103,6 +103,7 @@ class NaborGraficovAdmin(ImportExportModelAdmin):
         'id',
         'name',
         'tip',
+        'skrit',
     )
     search_fields = ('name',)
 
@@ -111,6 +112,7 @@ class NaborGraficovAdmin(ImportExportModelAdmin):
     list_editable = (
         'tip',
         'name',
+        'skrit',
 
     )
 

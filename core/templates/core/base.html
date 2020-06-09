@@ -5,9 +5,9 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Пока без разницы</title>
+    <title>ИС Ивановой</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="icon" href="{% static 'core/favicon.ico' %}">
+{#    <link rel="icon" href="{% static 'core/favicon.ico' %}">#}
     <link rel="stylesheet" href="{% static 'core/lib/bootstrap.min.css' %}">
     <link rel="stylesheet"
           href="{% static 'core/lib/jqwidgets/jqwidgets/styles/jqx.base.css' %}" type="text/css"/>
@@ -22,13 +22,13 @@
 <body>
 
 <nav class="navbar navbar-light bg-success text-light mb-2 px-0">
-    <div class="container">
+    <div class="container-fluid">
         <div class="row w-100">
              <div class="col d-md-block d-none ">
 
 
                 <a class="text-light text-center text-uppercase nav-link py-2 px-0"
-                   href="/"><span><b>Пока без разницы</b></span></a>
+                   href="/"><span><b>ИС Ивановой</b></span></a>
             </div>
             {% if user.is_authenticated %}
                 <div class="col col-md-2 text-right pt-2"><a class="text-light nav-link font-weight-bold p-0 text-light nav-link "

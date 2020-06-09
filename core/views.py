@@ -5,7 +5,7 @@ from core.models import ParametriGraficof, NaborGraficov
 
 
 def render_main(request):
-    nabor = NaborGraficov.objects.all()
+    nabor = NaborGraficov.objects.filter(skrit=False)
     return render(request, 'core/main.html', {
         'nabor': nabor
     })

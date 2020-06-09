@@ -36,3 +36,7 @@ height: 6em;
 }
 
 
+.list-group-item.list-group-item-action.active{
+        background-color: #28a745;
+    border-color: #1aa539;
+}

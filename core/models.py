@@ -12,6 +12,8 @@ class NaborGraficov(models.Model):
         ('B3 и Beta', 'B3 и Beta'),
         ('B4 и Alpha', 'B4 и Alpha'),
     ))
+
+    skrit = models.BooleanField('Скрыть', default=False)
     def __str__(self):
         return f'#{self.id} {self.name[0:30]}...'
 
@@ -51,15 +53,15 @@ class ParametriGraficof(models.Model):
             koefizent_discontirovania += 1 / (1 + float(self.stavka_diskontirovania)) ** (i + 1)
         return koefizent_discontirovania
 
-        sum = 0
+        summa = 0
         for i in range(self.period):
-            sum += (1 - (1 - float(self.dolia_nackoplenia_zagr_vechesatv)) ** (i + 1)) / (
+            summa += (1 - (1 - float(self.dolia_nackoplenia_zagr_vechesatv)) ** (i + 1)) / (
                         float(self.dolia_nackoplenia_zagr_vechesatv) * (1 + float(self.stavka_diskontirovania)) ** (
                             i + 1)) - float(self.investizii_v_rashirenie_proizvodstva)
         velichina_vigod = float(self.kol_vo_tovara) * (
                 float(self.price) - float(self.udelnaia_stoimost_proizvodstva)) * koefizent_discontirovania - float(
             self.negativ_vozdeistvia_na_obshestvo) * float(self.kol_vo_tovara) * float(
-            self.obiem_zagriaz_veshestv) * sum
+            self.obiem_zagriaz_veshestv) * summa
         return velichina_vigod
 
 
