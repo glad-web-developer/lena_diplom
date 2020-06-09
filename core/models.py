@@ -37,14 +37,21 @@ class ParametriGraficof(models.Model):
     investizii_v_rashirenie_proizvodstva = models.FloatField('f ˗ инвестиции в расширение производства', )
 
     velichina_vigod = models.FloatField('b3 ˗ величина выгод', editable=False, null=True, blank=True)
+    b4 = models.FloatField('b4 ˗ величина выгод', editable=False, null=True, blank=True)
     graniza_privlekatelnosti = models.FloatField('beta - граница привлекательности инвестиций', editable=False,
                                                  null=True, blank=True)
+    alpha = models.FloatField('alpha - граница привлекательности инвестиций', editable=False, null=True, blank=True)
+
+
 
     def __str__(self):
         return f'id #{self.id}'
 
     def str_graniza_privlekatelnosti(self):
         return str(self.graniza_privlekatelnosti).replace(',','.')
+
+    def str_alpha(self):
+        return str(self.get_alpha()).replace(',','.')
 
 
     def get_velichina_vigod(self):
@@ -91,11 +98,15 @@ class ParametriGraficof(models.Model):
 
             # РАСЧЕТ b3
             sum = 0
-            for i in range(self.period):
-                sum += (1-(1-float(self.dolia_nackoplenia_zagr_vechesatv))**(i+1))/(float(self.dolia_nackoplenia_zagr_vechesatv)*(1+float(self.stavka_diskontirovania))**(i+1)) - float(self.investizii_v_rashirenie_proizvodstva)
-            velichina_vigod = float(self.kol_vo_tovara) * (
-                        float(self.price) - float(self.udelnaia_stoimost_proizvodstva)) * koefizent_discontirovania - float(self.negativ_vozdeistvia_na_obshestvo) * float(self.kol_vo_tovara) * float(self.obiem_zagriaz_veshestv) * sum
-            self.velichina_vigod = velichina_vigod
+            try:
+                for i in range(self.period):
+                    sum += (1-(1-float(self.dolia_nackoplenia_zagr_vechesatv))**(i+1))/(float(self.dolia_nackoplenia_zagr_vechesatv)*(1+float(self.stavka_diskontirovania))**(i+1)) - float(self.investizii_v_rashirenie_proizvodstva)
+                velichina_vigod = float(self.kol_vo_tovara) * (
+                            float(self.price) - float(self.udelnaia_stoimost_proizvodstva)) * koefizent_discontirovania - float(self.negativ_vozdeistvia_na_obshestvo) * float(self.kol_vo_tovara) * float(self.obiem_zagriaz_veshestv) * sum
+
+                self.velichina_vigod = velichina_vigod
+            except ZeroDivisionError :
+                self.velichina_vigod = 0
 
             # РАСЧЕТ beta
             try:
@@ -104,14 +115,34 @@ class ParametriGraficof(models.Model):
                     1 - self.dolia_nackoplenia_zagr_vechesatv)) - 1
             except Exception:
                 graniza_privlekatelnosti = 0
+
             self.graniza_privlekatelnosti = graniza_privlekatelnosti
+
+            self.b4 = self.get_b4()
+            self.alpha = self.get_alpha()
 
             super(ParametriGraficof, self).save(*args, **kwargs)
 
 
-        # def get_raschet(self):
-        #     graniza_privlekatelnosti = (math.log(1 - (self.dolia_nackoplenia_zagr_vechesatv * (
-        #                 self.price - self.udelnaia_stoimost_proizvodstva)) / self.negativ_vozdeistvia_na_obshestvo * self.obiem_zagriaz_veshestv) / math.log(
-        #         1 - self.dolia_nackoplenia_zagr_vechesatv)) - 1
-        #
-        #     print(graniza_privlekatelnosti)
+    def get_b4(self):
+        try:
+            do_znaka_minus = self.kol_vo_tovara * (self.price - self.udelnaia_stoimost_proizvodstva) * (
+                        1 / self.stavka_diskontirovania) * (1 - (1 / ((1 + self.stavka_diskontirovania) ** self.period)))
+            summator = 0
+            for i in range(self.period):
+                t = i + 1
+                summator += t / ((1 + self.stavka_diskontirovania) ** t)
+
+            posle_znaka_minus = self.negativ_vozdeistvia_na_obshestvo * self.kol_vo_tovara * self.obiem_zagriaz_veshestv * summator
+
+            b4 = do_znaka_minus - posle_znaka_minus - self.investizii_v_rashirenie_proizvodstva
+        except Exception:
+            b4 = 0
+        return (b4)
+
+    def get_alpha(self):
+        try:
+            tmp = (self.price-self.udelnaia_stoimost_proizvodstva)/(self.negativ_vozdeistvia_na_obshestvo*self.obiem_zagriaz_veshestv) -1
+        except Exception:
+            tmp = 0
+        return  tmp

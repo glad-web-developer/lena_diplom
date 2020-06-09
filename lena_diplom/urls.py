@@ -16,9 +16,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from core.views import render_main
+from core.views import render_main, get_raschet
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('get_raschet', get_raschet),
     path('', render_main),
 ]

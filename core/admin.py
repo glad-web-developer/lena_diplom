@@ -24,8 +24,17 @@ class ParametriGraficofResource(resources.ModelResource):
     nachalnii_moment_vremeni = Field(attribute='nachalnii_moment_vremeni', column_name='t ˗ начальный момент времени', )
     investizii_v_rashirenie_proizvodstva = Field(attribute='investizii_v_rashirenie_proizvodstva',
                                                  column_name='f ˗ инвестиции в расширение производства', )
-    velichina_vigod = Field(attribute='velichina_vigod',  column_name='b3 ˗ величина выгод', )
-    graniza_privlekatelnosti = Field(attribute='graniza_privlekatelnosti',  column_name='beta - граница привлекательности инвестиций', )
+
+    velichina_vigod = Field(attribute='velichina_vigod',
+                                                 column_name='b3 ˗ величина выгод', )
+    b4 = Field(attribute='b4',
+                                                 column_name='b4 ˗ величина выгод', )
+
+    graniza_privlekatelnosti = Field(attribute='graniza_privlekatelnosti',
+                                                 column_name='beta - граница привлекательности инвестиций', )
+
+    alpha = Field(attribute='alpha',
+                                                 column_name='alpha - граница привлекательности инвестиций', )
 
     class Meta:
         model = ParametriGraficof
@@ -45,6 +54,8 @@ class ParametriGraficofResource(resources.ModelResource):
             'investizii_v_rashirenie_proizvodstva',
             'velichina_vigod',
             'graniza_privlekatelnosti',
+            'b4',
+            'alpha',
         )
 
         skip_unchanged = True
@@ -69,6 +80,8 @@ class ParametriGraficofAdmin(ImportExportModelAdmin):
         'investizii_v_rashirenie_proizvodstva',
         'velichina_vigod',
         'graniza_privlekatelnosti',
+        'alpha',
+        'b4',
     )
 
     list_display_links = ('id',)
