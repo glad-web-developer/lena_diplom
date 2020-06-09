@@ -108,9 +108,14 @@ class ParametriGraficofAdmin(ImportExportModelAdmin):
 
 admin.site.register(ParametriGraficof, ParametriGraficofAdmin)
 
-
+class ParametriGraficofInline(admin.TabularInline):
+    model = ParametriGraficof
 
 class NaborGraficovAdmin(ImportExportModelAdmin):
+
+    inlines = [
+        ParametriGraficofInline,
+    ]
 
     list_display = (
         'id',
