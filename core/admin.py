@@ -84,22 +84,10 @@ class ParametriGraficofAdmin(ImportExportModelAdmin):
         'b4',
     )
 
-    list_display_links = ('id',)
+    list_display_links = []
     list_filter = ('nabor_graficov',)
 
-    list_editable = (
-        'nabor_graficov',
-        'period',
-        'kol_vo_tovara',
-        'price',
-        'udelnaia_stoimost_proizvodstva',
-        'negativ_vozdeistvia_na_obshestvo',
-        'obiem_zagriaz_veshestv',
-        'dolia_nackoplenia_zagr_vechesatv',
-        'stavka_diskontirovania',
-        'nachalnii_moment_vremeni',
-        'investizii_v_rashirenie_proizvodstva',
-    )
+
 
     ordering = ('period',)
     save_on_top = True
@@ -111,32 +99,56 @@ admin.site.register(ParametriGraficof, ParametriGraficofAdmin)
 class ParametriGraficofInline(admin.TabularInline):
     model = ParametriGraficof
 
-class NaborGraficovAdmin(ImportExportModelAdmin):
+class NaborGraficovAdmin(admin.ModelAdmin):
 
-    inlines = [
-        ParametriGraficofInline,
-    ]
+    # inlines = [
+    #     ParametriGraficofInline,
+    # ]
 
     list_display = (
         'id',
         'name',
         'tip',
         'stroit_po',
+        'sag',
+        'periodov',
+        # 'kol_vo_tovara',
+        # 'price',
+        # 'udelnaia_stoimost_proizvodstva',
+        # 'koefizent_discontirovania',
+        # 'negativ_vozdeistvia_na_obshestvo',
+        # 'obiem_zagriaz_veshestv',
+        # 'dolia_nackoplenia_zagr_vechesatv',
+        # 'stavka_diskontirovania',
+        # 'nachalnii_moment_vremeni',
+        # 'investizii_v_rashirenie_proizvodstva',
         'skrit',
     )
     search_fields = ('name',)
 
-    list_display_links = ('id',)
+    list_display_links = ('id',  'name',)
 
     list_editable = (
         'tip',
-        'name',
+
         'stroit_po',
+        'sag',
+        'periodov',
+        # 'kol_vo_tovara',
+        # 'price',
+        # 'udelnaia_stoimost_proizvodstva',
+        # 'koefizent_discontirovania',
+        # 'negativ_vozdeistvia_na_obshestvo',
+        # 'obiem_zagriaz_veshestv',
+        # 'dolia_nackoplenia_zagr_vechesatv',
+        # 'stavka_diskontirovania',
+        # 'nachalnii_moment_vremeni',
+        # 'investizii_v_rashirenie_proizvodstva',
         'skrit',
 
     )
 
-    ordering = ('name',)
+
     save_on_top = True
     save_as = True
 

@@ -7,6 +7,7 @@ class NaborGraficov(models.Model):
     class Meta:
         verbose_name = 'Набор графиков'
         verbose_name_plural = 'Набор графиков'
+        ordering = ['id']
 
     name = models.CharField('Название', max_length=255)
     tip = models.CharField('Тип', max_length=255, choices=(
@@ -18,20 +19,73 @@ class NaborGraficov(models.Model):
         ('kol_vo_tovara', 'q'),
         ('price', 'p'),
         ('udelnaia_stoimost_proizvodstva', 'c'),
-        ('koefizent_discontirovania', 'a(n,r)'),
+        # ('koefizent_discontirovania', 'a(n,r)'),
         ('negativ_vozdeistvia_na_obshestvo', 'd'),
         ('obiem_zagriaz_veshestv', 'e'),
-        ('dolia_nackoplenia_zagr_vechesatv', 'δ'),
-        ('stavka_diskontirovania', 'r'),
-        ('nachalnii_moment_vremeni', 't'),
+        # ('dolia_nackoplenia_zagr_vechesatv', 'δ'),
+        # ('stavka_diskontirovania', 'r'),
+        # ('nachalnii_moment_vremeni', 't'),
         ('investizii_v_rashirenie_proizvodstva', 'f'),
 
     ), default='price')
 
+    sag = models.FloatField('Шаг', default=0.1)
+    periodov = models.IntegerField('Периодов', default=10)
+    kol_vo_tovara = models.FloatField('q ˗ количество товара')
+    price = models.FloatField('p ˗ цена', )
+    udelnaia_stoimost_proizvodstva = models.FloatField('c ˗ удельная стоимость производства',  )
+
+    negativ_vozdeistvia_na_obshestvo = models.FloatField(
+        'd ˗ негативное воздействие на качество жизни общества (социальный ущерб) в каждый период времени пропорционально объёму находящихся в окружающей среде загрязнений;',
+        )
+    obiem_zagriaz_veshestv = models.FloatField('e ˗ объем загрязняющего вещества на единицу товара',  )
+    dolia_nackoplenia_zagr_vechesatv = models.FloatField('δ ˗ доля накопленного загрязняющего вещества', )
+    stavka_diskontirovania = models.FloatField('r ˗ ставка дисконтирования', )
+    nachalnii_moment_vremeni = models.FloatField('t ˗ начальный момент времени',)
+    investizii_v_rashirenie_proizvodstva = models.FloatField('f ˗ инвестиции в расширение производства', )
+
+
     skrit = models.BooleanField('Скрыть', default=False)
+
+    def get_title_param(self):
+        tmp = {
+            'kol_vo_tovara':f'q = {self.kol_vo_tovara}',
+            'price':f'p = {self.price}',
+            'udelnaia_stoimost_proizvodstva':f'c = {self.udelnaia_stoimost_proizvodstva}',
+            'negativ_vozdeistvia_na_obshestvo':f'd = {self.negativ_vozdeistvia_na_obshestvo}',
+            'obiem_zagriaz_veshestv':f'e = {self.obiem_zagriaz_veshestv}',
+            'dolia_nackoplenia_zagr_vechesatv':f'δ = {self.dolia_nackoplenia_zagr_vechesatv}',
+            'investizii_v_rashirenie_proizvodstva':f'f = {self.investizii_v_rashirenie_proizvodstva}',
+        }
+        del(tmp[self.stroit_po])
+        return ', '.join(tmp.values())
 
     def __str__(self):
         return f'#{self.id} {self.name[0:30]}...'
+
+    def save(self, *args, **kwargs):
+        self.parametri.all().delete()
+        if self.tip == 'B4 и Alpha':
+            self.dolia_nackoplenia_zagr_vechesatv = 0
+
+        for i in range(self.periodov):
+            tmp = ParametriGraficof(
+                nabor_graficov=self,
+                period=i+1,
+                kol_vo_tovara = self.kol_vo_tovara,
+                price = self.price,
+                udelnaia_stoimost_proizvodstva = self.udelnaia_stoimost_proizvodstva,
+                negativ_vozdeistvia_na_obshestvo = self.negativ_vozdeistvia_na_obshestvo,
+                obiem_zagriaz_veshestv = self.obiem_zagriaz_veshestv,
+                dolia_nackoplenia_zagr_vechesatv = self.dolia_nackoplenia_zagr_vechesatv,
+                stavka_diskontirovania = self.stavka_diskontirovania,
+                nachalnii_moment_vremeni = self.nachalnii_moment_vremeni+i,
+                investizii_v_rashirenie_proizvodstva = self.investizii_v_rashirenie_proizvodstva,
+            )
+            znchenenie_prostraimogo_parametra = round(i * self.sag + tmp.__getattribute__(self.stroit_po), 2)
+            tmp.__setattr__(self.stroit_po, znchenenie_prostraimogo_parametra)
+            tmp.save()
+        super(NaborGraficov, self).save(*args, **kwargs)
 
 
 class ParametriGraficof(models.Model):
@@ -41,20 +95,20 @@ class ParametriGraficof(models.Model):
         ordering = ['period']
 
     nabor_graficov = models.ForeignKey(NaborGraficov, verbose_name='Набор графиков', null=True, blank=False,
-                                       on_delete=models.CASCADE, related_name='parametri')
-    period = models.IntegerField('n ˗ период', )
-    kol_vo_tovara = models.IntegerField('q ˗ количество товара', )
-    price = models.FloatField('p ˗ цена', )
-    udelnaia_stoimost_proizvodstva = models.FloatField('c ˗ удельная стоимость производства', )
+                                       on_delete=models.CASCADE, related_name='parametri', editable=False)
+    period = models.IntegerField('n ˗ период', editable=False )
+    kol_vo_tovara = models.FloatField('q ˗ количество товара', editable=False )
+    price = models.FloatField('p ˗ цена', editable=False )
+    udelnaia_stoimost_proizvodstva = models.FloatField('c ˗ удельная стоимость производства', editable=False,)
     koefizent_discontirovania = models.FloatField('a(n,r) ˗ коэффициент дисконтирования', editable=False, null=True,
                                                   blank=True)
     negativ_vozdeistvia_na_obshestvo = models.FloatField(
-        'd ˗ негативное воздействие на качество жизни общества (социальный ущерб) в каждый период времени пропорционально объёму находящихся в окружающей среде загрязнений;', )
-    obiem_zagriaz_veshestv = models.FloatField('e ˗ объем загрязняющего вещества на единицу товара', )
-    dolia_nackoplenia_zagr_vechesatv = models.FloatField('δ ˗ доля накопленного загрязняющего вещества', )
-    stavka_diskontirovania = models.FloatField('r ˗ ставка дисконтирования', )
-    nachalnii_moment_vremeni = models.FloatField('t ˗ начальный момент времени', )
-    investizii_v_rashirenie_proizvodstva = models.FloatField('f ˗ инвестиции в расширение производства', )
+        'd ˗ негативное воздействие на качество жизни общества (социальный ущерб) в каждый период времени пропорционально объёму находящихся в окружающей среде загрязнений;', editable=False,)
+    obiem_zagriaz_veshestv = models.FloatField('e ˗ объем загрязняющего вещества на единицу товара', editable=False,)
+    dolia_nackoplenia_zagr_vechesatv = models.FloatField('δ ˗ доля накопленного загрязняющего вещества', editable=False,)
+    stavka_diskontirovania = models.FloatField('r ˗ ставка дисконтирования', editable=False,)
+    nachalnii_moment_vremeni = models.FloatField('t ˗ начальный момент времени', editable=False,)
+    investizii_v_rashirenie_proizvodstva = models.FloatField('f ˗ инвестиции в расширение производства', editable=False,)
 
     velichina_vigod = models.FloatField('b3 ˗ величина выгод', editable=False, null=True, blank=True)
     b4 = models.FloatField('b4 ˗ величина выгод', editable=False, null=True, blank=True)
@@ -172,8 +226,10 @@ class ParametriGraficof(models.Model):
         return tmp
 
     def get_spisok_vsex_tchek(self):
-       return f"""n = {self.period},q = {self.kol_vo_tovara}"""
-
+        if self.nabor_graficov.tip == 'B3 и Beta':
+            return f" b3={self.velichina_vigod} \n n = {self.period}\n q = {self.kol_vo_tovara}\n p = {self.price}\n c = {self.udelnaia_stoimost_proizvodstva}\n a(n,r) = {self.koefizent_discontirovania}\n d = {self.negativ_vozdeistvia_na_obshestvo}\n e = {self.obiem_zagriaz_veshestv}\n δ = {self.dolia_nackoplenia_zagr_vechesatv}\n  r = {self.stavka_diskontirovania}\n f = {self.investizii_v_rashirenie_proizvodstva}"
+        else:
+            return f" b4={self.b4} \n n = {self.period}\n q = {self.kol_vo_tovara}\n p = {self.price}\n c = {self.udelnaia_stoimost_proizvodstva}\n a(n,r) = {self.koefizent_discontirovania}\n d = {self.negativ_vozdeistvia_na_obshestvo}\n e = {self.obiem_zagriaz_veshestv}\n δ = {self.dolia_nackoplenia_zagr_vechesatv}\n  r = {self.stavka_diskontirovania}\n f = {self.investizii_v_rashirenie_proizvodstva}"
 
     def get_str_dlua_postroenia(self):
         parametr = self.nabor_graficov.stroit_po

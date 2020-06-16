@@ -104,22 +104,40 @@
                                                         }],
 
                                                         labels: [
-                                                            {% for i in danie.parametri.all %} 'd = {{ i.get_spisok_vsex_tchek }}' ,{% endfor %}]
+                                                            {% for i in danie.parametri.all %} '' ,{% endfor %}]
                                                     },
                                                     options: {
                                                         responsive: true,
+                                                        title: {
+                                                            display: true,
+                                                            text: '{{ danie.get_title_param }}'
+                                                        },
                                                         scales: {
                                                             xAxes: [{
                                                                 ticks: {
                                                                     // Include a dollar sign in the ticks
                                                                     callback: function (value, index, values) {
                                                                         let a = [
-                                                            {% for i in danie.parametri.all %} '{{ i.get_str_dlua_postroenia }}' ,{% endfor %}]
+                                                                            {% for i in danie.parametri.all %} '{{ i.get_str_dlua_postroenia }}' ,{% endfor %}]
                                                                         return a[index];
                                                                     }
                                                                 }
                                                             }]
-                                                        }
+                                                        },
+
+                                                        tooltips: {
+                                                            mode: 'index',
+                                                            callbacks: {
+                                                                // Use the footer callback to display the sum of the items showing in the tooltip
+                                                                footer: function (tooltipItems, data, index) {
+                                                                    var sum = 0;
+                                                                    let a = [
+                                                                        {% for i in danie.parametri.all %} `{{ i.get_spisok_vsex_tchek }}` ,{% endfor %}];
+
+                                                                    return a[tooltipItems[0].index]
+                                                                },
+                                                            },
+                                                        },
 
                                                     }
                                                 };
@@ -156,15 +174,41 @@
                                                         }],
 
                                                         labels: [
-                                                            {% for i in danie.parametri.all %} 'С = {{ i.udelnaia_stoimost_proizvodstva }}' ,{% endfor %}]
+                                                            {% for i in danie.parametri.all %} '' ,{% endfor %}]
                                                     },
-                                                    options: {
+                                                  options: {
                                                         responsive: true,
-
                                                         title: {
-                                                            display: false,
-                                                            text: 'Структура сотрудников по категориям(на конец периода)'
+                                                            display: true,
+                                                            text: '{{ danie.get_title_param }}'
                                                         },
+                                                        scales: {
+                                                            xAxes: [{
+                                                                ticks: {
+                                                                    // Include a dollar sign in the ticks
+                                                                    callback: function (value, index, values) {
+                                                                        let a = [
+                                                                            {% for i in danie.parametri.all %} '{{ i.get_str_dlua_postroenia }}' ,{% endfor %}]
+                                                                        return a[index];
+                                                                    }
+                                                                }
+                                                            }]
+                                                        },
+
+                                                        tooltips: {
+                                                            mode: 'index',
+                                                            callbacks: {
+                                                                // Use the footer callback to display the sum of the items showing in the tooltip
+                                                                footer: function (tooltipItems, data, index) {
+                                                                    var sum = 0;
+                                                                    let a = [
+                                                                        {% for i in danie.parametri.all %} `{{ i.get_spisok_vsex_tchek }}` ,{% endfor %}];
+
+                                                                    return a[tooltipItems[0].index]
+                                                                },
+                                                            },
+                                                        },
+
                                                     }
                                                 };
 
