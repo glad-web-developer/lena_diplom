@@ -104,11 +104,22 @@
                                                         }],
 
                                                         labels: [
-                                                            {% for i in danie.parametri.all %} 'd = {{ i.negativ_vozdeistvia_na_obshestvo }}' ,{% endfor %}]
+                                                            {% for i in danie.parametri.all %} 'd = {{ i.get_spisok_vsex_tchek }}' ,{% endfor %}]
                                                     },
                                                     options: {
                                                         responsive: true,
-
+                                                        scales: {
+                                                            xAxes: [{
+                                                                ticks: {
+                                                                    // Include a dollar sign in the ticks
+                                                                    callback: function (value, index, values) {
+                                                                        let a = [
+                                                            {% for i in danie.parametri.all %} '{{ i.get_str_dlua_postroenia }}' ,{% endfor %}]
+                                                                        return a[index];
+                                                                    }
+                                                                }
+                                                            }]
+                                                        }
 
                                                     }
                                                 };

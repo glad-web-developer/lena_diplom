@@ -2,6 +2,7 @@ import math
 
 from django.db import models
 
+
 class NaborGraficov(models.Model):
     class Meta:
         verbose_name = 'Набор графиков'
@@ -13,16 +14,34 @@ class NaborGraficov(models.Model):
         ('B4 и Alpha', 'B4 и Alpha'),
     ))
 
+    stroit_po = models.CharField('Строить по', max_length=255, choices=(
+        ('kol_vo_tovara', 'q'),
+        ('price', 'p'),
+        ('udelnaia_stoimost_proizvodstva', 'c'),
+        ('koefizent_discontirovania', 'a(n,r)'),
+        ('negativ_vozdeistvia_na_obshestvo', 'd'),
+        ('obiem_zagriaz_veshestv', 'e'),
+        ('dolia_nackoplenia_zagr_vechesatv', 'δ'),
+        ('stavka_diskontirovania', 'r'),
+        ('nachalnii_moment_vremeni', 't'),
+        ('investizii_v_rashirenie_proizvodstva', 'f'),
+
+    ), default='price')
+
     skrit = models.BooleanField('Скрыть', default=False)
+
     def __str__(self):
         return f'#{self.id} {self.name[0:30]}...'
+
 
 class ParametriGraficof(models.Model):
     class Meta:
         verbose_name = 'Параметры графиков'
         verbose_name_plural = 'Параметры графиков'
         ordering = ['period']
-    nabor_graficov = models.ForeignKey(NaborGraficov, verbose_name='Набор графиков', null=True, blank=False, on_delete=models.CASCADE, related_name='parametri')
+
+    nabor_graficov = models.ForeignKey(NaborGraficov, verbose_name='Набор графиков', null=True, blank=False,
+                                       on_delete=models.CASCADE, related_name='parametri')
     period = models.IntegerField('n ˗ период', )
     kol_vo_tovara = models.IntegerField('q ˗ количество товара', )
     price = models.FloatField('p ˗ цена', )
@@ -43,17 +62,14 @@ class ParametriGraficof(models.Model):
                                                  null=True, blank=True)
     alpha = models.FloatField('alpha - граница привлекательности инвестиций', editable=False, null=True, blank=True)
 
-
-
     def __str__(self):
         return f'id #{self.id}'
 
     def str_graniza_privlekatelnosti(self):
-        return str(self.graniza_privlekatelnosti).replace(',','.')
+        return str(self.graniza_privlekatelnosti).replace(',', '.')
 
     def str_alpha(self):
-        return str(self.get_alpha()).replace(',','.')
-
+        return str(self.get_alpha()).replace(',', '.')
 
     def get_velichina_vigod(self):
         koefizent_discontirovania = 0
@@ -63,8 +79,8 @@ class ParametriGraficof(models.Model):
         try:
             for i in range(self.period):
                 sum += (1 - (1 - float(self.dolia_nackoplenia_zagr_vechesatv)) ** (i + 1)) / (
-                            float(self.dolia_nackoplenia_zagr_vechesatv) * (1 + float(self.stavka_diskontirovania)) ** (
-                                i + 1)) - float(self.investizii_v_rashirenie_proizvodstva)
+                        float(self.dolia_nackoplenia_zagr_vechesatv) * (1 + float(self.stavka_diskontirovania)) ** (
+                        i + 1)) - float(self.investizii_v_rashirenie_proizvodstva)
             velichina_vigod = float(self.kol_vo_tovara) * (
                     float(self.price) - float(self.udelnaia_stoimost_proizvodstva)) * koefizent_discontirovania - float(
                 self.negativ_vozdeistvia_na_obshestvo) * float(self.kol_vo_tovara) * float(
@@ -74,7 +90,6 @@ class ParametriGraficof(models.Model):
         except ZeroDivisionError:
             velichina_vigod = 0
         return velichina_vigod
-
 
     def get_koefizent_discontirovania(self):
         koefizent_discontirovania = 0
@@ -90,48 +105,52 @@ class ParametriGraficof(models.Model):
                 1 - self.dolia_nackoplenia_zagr_vechesatv)) - 1
         except Exception:
             graniza_privlekatelnosti = 0
-        return str(graniza_privlekatelnosti).replace(',','.')
+        return str(graniza_privlekatelnosti).replace(',', '.')
 
     def save(self, *args, **kwargs):
-            # РАСЧИТАТЬ КОЭФ ДИСКОРТИРОВАНИЯ
-            koefizent_discontirovania = 0
+        # РАСЧИТАТЬ КОЭФ ДИСКОРТИРОВАНИЯ
+        koefizent_discontirovania = 0
+        for i in range(self.period):
+            koefizent_discontirovania += 1 / (1 + float(self.stavka_diskontirovania)) ** (i + 1)
+
+        self.koefizent_discontirovania = koefizent_discontirovania
+
+        # РАСЧЕТ b3
+        sum = 0
+        try:
             for i in range(self.period):
-                koefizent_discontirovania += 1 / (1 + float(self.stavka_diskontirovania)) ** (i + 1)
+                sum += (1 - (1 - float(self.dolia_nackoplenia_zagr_vechesatv)) ** (i + 1)) / (
+                            float(self.dolia_nackoplenia_zagr_vechesatv) * (1 + float(self.stavka_diskontirovania)) ** (
+                                i + 1)) - float(self.investizii_v_rashirenie_proizvodstva)
+            velichina_vigod = float(self.kol_vo_tovara) * (
+                    float(self.price) - float(self.udelnaia_stoimost_proizvodstva)) * koefizent_discontirovania - float(
+                self.negativ_vozdeistvia_na_obshestvo) * float(self.kol_vo_tovara) * float(
+                self.obiem_zagriaz_veshestv) * sum
 
-            self.koefizent_discontirovania = koefizent_discontirovania
+            self.velichina_vigod = velichina_vigod
+        except ZeroDivisionError:
+            self.velichina_vigod = 0
 
-            # РАСЧЕТ b3
-            sum = 0
-            try:
-                for i in range(self.period):
-                    sum += (1-(1-float(self.dolia_nackoplenia_zagr_vechesatv))**(i+1))/(float(self.dolia_nackoplenia_zagr_vechesatv)*(1+float(self.stavka_diskontirovania))**(i+1)) - float(self.investizii_v_rashirenie_proizvodstva)
-                velichina_vigod = float(self.kol_vo_tovara) * (
-                            float(self.price) - float(self.udelnaia_stoimost_proizvodstva)) * koefizent_discontirovania - float(self.negativ_vozdeistvia_na_obshestvo) * float(self.kol_vo_tovara) * float(self.obiem_zagriaz_veshestv) * sum
+        # РАСЧЕТ beta
+        try:
+            graniza_privlekatelnosti = (math.log(1 - (float(self.dolia_nackoplenia_zagr_vechesatv) * (
+                    float(self.price) - float(self.udelnaia_stoimost_proizvodstva))) / float(
+                self.negativ_vozdeistvia_na_obshestvo) * float(self.obiem_zagriaz_veshestv)) / math.log(
+                1 - self.dolia_nackoplenia_zagr_vechesatv)) - 1
+        except Exception:
+            graniza_privlekatelnosti = 0
 
-                self.velichina_vigod = velichina_vigod
-            except ZeroDivisionError :
-                self.velichina_vigod = 0
+        self.graniza_privlekatelnosti = graniza_privlekatelnosti
 
-            # РАСЧЕТ beta
-            try:
-                graniza_privlekatelnosti = (math.log(1 - (float(self.dolia_nackoplenia_zagr_vechesatv) * (
-                        float(self.price) - float(self.udelnaia_stoimost_proizvodstva))) / float(self.negativ_vozdeistvia_na_obshestvo) * float(self.obiem_zagriaz_veshestv)) / math.log(
-                    1 - self.dolia_nackoplenia_zagr_vechesatv)) - 1
-            except Exception:
-                graniza_privlekatelnosti = 0
+        self.b4 = self.get_b4()
+        self.alpha = self.get_alpha()
 
-            self.graniza_privlekatelnosti = graniza_privlekatelnosti
-
-            self.b4 = self.get_b4()
-            self.alpha = self.get_alpha()
-
-            super(ParametriGraficof, self).save(*args, **kwargs)
-
+        super(ParametriGraficof, self).save(*args, **kwargs)
 
     def get_b4(self):
         try:
             do_znaka_minus = self.kol_vo_tovara * (self.price - self.udelnaia_stoimost_proizvodstva) * (
-                        1 / self.stavka_diskontirovania) * (1 - (1 / ((1 + self.stavka_diskontirovania) ** self.period)))
+                    1 / self.stavka_diskontirovania) * (1 - (1 / ((1 + self.stavka_diskontirovania) ** self.period)))
             summator = 0
             for i in range(self.period):
                 t = i + 1
@@ -146,7 +165,17 @@ class ParametriGraficof(models.Model):
 
     def get_alpha(self):
         try:
-            tmp = (self.price-self.udelnaia_stoimost_proizvodstva)/(self.negativ_vozdeistvia_na_obshestvo*self.obiem_zagriaz_veshestv) -1
+            tmp = (self.price - self.udelnaia_stoimost_proizvodstva) / (
+                        self.negativ_vozdeistvia_na_obshestvo * self.obiem_zagriaz_veshestv) - 1
         except Exception:
             tmp = 0
-        return  tmp
+        return tmp
+
+    def get_spisok_vsex_tchek(self):
+       return f"""n = {self.period},q = {self.kol_vo_tovara}"""
+
+
+    def get_str_dlua_postroenia(self):
+        parametr = self.nabor_graficov.stroit_po
+        znach =  self.__getattribute__(parametr)
+        return f'{self.nabor_graficov.get_stroit_po_display()} = {znach}'
