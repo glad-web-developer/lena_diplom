@@ -99,7 +99,7 @@ admin.site.register(ParametriGraficof, ParametriGraficofAdmin)
 class ParametriGraficofInline(admin.TabularInline):
     model = ParametriGraficof
 
-class NaborGraficovAdmin(admin.ModelAdmin):
+class NaborGraficovAdmin(ImportExportModelAdmin):
 
     # inlines = [
     #     ParametriGraficofInline,
