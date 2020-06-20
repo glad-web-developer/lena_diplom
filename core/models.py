@@ -67,7 +67,7 @@ class NaborGraficov(models.Model):
         self.parametri.all().delete()
         if self.tip == 'B4 и Alpha':
             self.dolia_nackoplenia_zagr_vechesatv = 0
-
+        super(NaborGraficov, self).save(*args, **kwargs)
         for i in range(self.periodov):
             tmp = ParametriGraficof(
                 nabor_graficov=self,
@@ -85,7 +85,7 @@ class NaborGraficov(models.Model):
             znchenenie_prostraimogo_parametra = round(i * self.sag + tmp.__getattribute__(self.stroit_po), 2)
             tmp.__setattr__(self.stroit_po, znchenenie_prostraimogo_parametra)
             tmp.save()
-        super(NaborGraficov, self).save(*args, **kwargs)
+
 
 
 class ParametriGraficof(models.Model):
